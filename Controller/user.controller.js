@@ -1,5 +1,4 @@
 import User from "../Models/User.schema.js";
-import mongoose from "mongoose";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -66,7 +65,6 @@ export const getAllEmployees = async (req, res) => {
     
     try {
         const employees = await User.find({"role":"employee"}); // get all employees
-        console.log(employees);
         res.status(200).json(employees); //response to FE
     } catch (error) {
         console.log(error);
@@ -77,21 +75,25 @@ export const getAllEmployees = async (req, res) => {
 
 export const updateEmployee = async (req, res) => {
     try {
-        const userId = req.params.id;
-        const updatedUser = await User.findByIdAndUpdate(userId, req.body.updatedUser, { new: true });
-        console.log(updatedUser);
-        res.status(201).json({"message":"updated user profile successfully"})
+        const userId = req.params.id; //get user to be updated using params
+        const updatedUser = await User.findByIdAndUpdate(userId, req.body.updatedUser, { new: true }); // update the user
+        res.status(201).json({"message":"updated user profile successfully",updatedUser}) // response to FE
     } catch (error) {
         console.log(error);
         res.status(500).json({ "message": `request failed : ${error.message}` });
     }
 }
 
-// export const markAttendance = () => {
-//     try {
-        
-//     } catch (error) {
-//         console.log(error.message);
-//         res.status(500).json({"message":`login failed : ${error.message}`})
-//     }
-// }
+export const deleteEmployee = async (req, res) => {
+    try {
+        const userId = req.params.id; // gte user to be deleted using params
+        const deletedUser = await User.findByIdAndDelete(userId); //delete the user from db
+        res.status(201).json({"message":"deleted user successfully",deletedUser}) //response to FE
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ "message": `request failed : ${error.message}` });
+    }
+}
+
+
+
