@@ -1,21 +1,25 @@
 import mongoose from "mongoose";
 
 const attendanceSchema = mongoose.Schema({
-    date: {
-        type: Date,
-        required: true
-    },
-    employee: {
+  date: {
+    type: Date,
+    required: true,
+  },
+  attendance: [
+    {
+      employee: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true
-    },
-    status: {
+        required: true,
+      },
+      status: {
         type: String,
         enum: ["Present", "Absent"],
-        required: true
+        required: true,
+      },
     }
+  ],
 });
 
-const Attendance = mongoose.Model("Attendance", attendanceSchema);
+const Attendance = mongoose.model("Attendance", attendanceSchema);
 export default Attendance;

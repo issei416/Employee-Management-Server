@@ -1,5 +1,5 @@
 import express from "express";
-import { deleteEmployee, getAllEmployees, getEmployee, login, markAttendance, register, updateEmployee } from "../Controller/user.controller.js";
+import { deleteEmployee, getAllEmployees, getEmployee, login, register, updateEmployee } from "../Controller/user.controller.js";
 import { roleAuth, userAuth } from "../Middleware/userAuth.js";
 
 const Router = express.Router();

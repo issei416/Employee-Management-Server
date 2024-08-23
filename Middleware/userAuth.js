@@ -17,7 +17,6 @@ export const userAuth = () => async (req, res, next) => {
             return res.status(401).json({ "message": "user does not exist" });
         }
         req.user = decoded;
-
         next();
 
     } catch (error) {

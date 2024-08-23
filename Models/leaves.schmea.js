@@ -26,8 +26,8 @@ const leaveSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-  },
+  }
 });
 
-const LeaveRecords = new mongoose.Modal('LeaveRecords', leaveSchema);
+const LeaveRecords = new mongoose.model('LeaveRecords', leaveSchema);
 export default LeaveRecords;
