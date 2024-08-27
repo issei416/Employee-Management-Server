@@ -34,8 +34,8 @@ export const roleAuth = (role) => async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
         const user = await User.findById(decoded._id);
+        req.user = user;
         if (user.role !== role) {
             return res.status(401).json({ "message": "Unauthorized to access this resource" });
         }
