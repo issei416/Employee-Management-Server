@@ -7,7 +7,7 @@ const Router = express.Router();
 Router.post('/register', register);
 Router.post('/login', login);
 Router.get('/getemployee', getEmployee);
-Router.get('/getallemployees', roleAuth('admin'), getAllEmployees);
+Router.post('/getallemployees', userAuth(), getAllEmployees);
 Router.post('/updateemployee/:id', userAuth(), updateEmployee);
 Router.delete('/deleteemployee/:id', roleAuth('admin'), deleteEmployee);
 

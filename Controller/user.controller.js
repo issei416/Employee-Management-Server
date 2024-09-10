@@ -65,8 +65,17 @@ export const getEmployee = async (req, res) => {
 
 export const getAllEmployees = async (req, res) => {
   try {
-    const employees = await User.find({ role: "employee" }); // get all employees
-    res.status(200).json(employees); //response to FE
+    const employees = await User.find(); // get all employees
+    const  filteredEmployees = employees.map(emp => {
+      return {
+        "employeeId":emp._id,
+        "name": emp.name,
+        "email": emp.email,
+        "designation": emp.designation,
+        "role":emp.role
+      } // omits phonenumber and password data since it's displayed to all employees without and role auth
+    })
+    res.status(200).json({"employees":filteredEmployees}); //response to FE
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: `request failed : ${error.message}` });
