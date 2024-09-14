@@ -2,6 +2,8 @@ import User from "../Models/User.schema.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import Project from "../Models/projects.schema.js";
+import LeaveRecords from "../Models/leaves.schmea.js";
 dotenv.config();
 
 export const register = async (req, res) => {
@@ -56,7 +58,7 @@ export const getEmployee = async (req, res) => {
     const userid = jwt.verify(token, process.env.JWT_SECRET); // verifying token using jwt
     const user = await User.findById(userid);
     console.log(user);
-    res.status(200).json(user); // response for frontend
+    res.status(200).json({ user }); // response for frontend
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ message: `login failed : ${error.message}` });
@@ -66,16 +68,16 @@ export const getEmployee = async (req, res) => {
 export const getAllEmployees = async (req, res) => {
   try {
     const employees = await User.find(); // get all employees
-    const  filteredEmployees = employees.map(emp => {
+    const filteredEmployees = employees.map((emp) => {
       return {
-        "employeeId":emp._id,
-        "name": emp.name,
-        "email": emp.email,
-        "designation": emp.designation,
-        "role":emp.role
-      } // omits phonenumber and password data since it's displayed to all employees without and role auth
-    })
-    res.status(200).json({"employees":filteredEmployees}); //response to FE
+        employeeId: emp._id,
+        name: emp.name,
+        email: emp.email,
+        designation: emp.designation,
+        role: emp.role,
+      }; // omits phonenumber and password data since it's displayed to all employees without and role auth
+    });
+    res.status(200).json({ employees: filteredEmployees }); //response to FE
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: `request failed : ${error.message}` });
@@ -107,5 +109,44 @@ export const deleteEmployee = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: `request failed : ${error.message}` });
+  }
+};
+
+//dashboard stats
+
+export const getDashboardStats = async (req, res) => {
+  try {
+    const employeeId = req.user._id;
+
+    // Fetch counts specific to the employee
+    const employeeProjectsCount = await Project.countDocuments({
+      assignedEmployees: employeeId, // Count projects where this employee is assigned
+    });
+    console.log(employeeProjectsCount);
+
+    const employeePendingProjects = await Project.countDocuments({
+      assignedEmployees: employeeId,
+      status: "Pending", // Count pending projects for the employee
+    });
+    console.log(employeePendingProjects);
+    
+    const employeeDaysOffCount = await LeaveRecords.countDocuments({
+      employee: employeeId,
+      status: "approved", // Approved leaves specific to the employee
+    });
+    console.log(employeeDaysOffCount);
+
+    // Respond with data
+    res.status(200).json({
+      "dashboardStats": {
+        projects: employeeProjectsCount,
+        pending: employeePendingProjects,
+        daysOff: employeeDaysOffCount,
+      },
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching employee dashboard stats", error });
   }
 };

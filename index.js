@@ -9,15 +9,19 @@ import './Schedulers/AttendanceScheduler.js'
 
 dotenv.config();
 
+//express cofiguration
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+//db connection
 dbConnect();
 
 app.get('/', (req, res) => {
     res.status(200).json({"message":"App is working fine"});
 });
+
+//routes configuration
 app.use('/api/user', userRouter);
 app.use('/api/user/attendance', attendanceRouter);
 app.use('/api/user/project', projectRouter)

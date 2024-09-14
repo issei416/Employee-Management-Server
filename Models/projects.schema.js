@@ -15,11 +15,11 @@ const projectSchema = mongoose.Schema({
         required:true
     }, assignedEmployees: {
         type: [mongoose.Schema.Types.ObjectId],
-        ref: "employee",
+        ref: "User",
         required:true
     }, assignedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "admin",
+        ref: "User",
         required:true
     }, status: {
         type: "String",
