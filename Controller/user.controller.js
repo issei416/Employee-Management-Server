@@ -4,7 +4,16 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import Project from "../Models/projects.schema.js";
 import LeaveRecords from "../Models/leaves.schmea.js";
+import Attendance from "../Models/attendance.schema.js";
+import mongoose from "mongoose";
+import * as path from "path";
+import * as fs from "fs";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
 dotenv.config();
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const register = async (req, res) => {
   try {
@@ -86,12 +95,11 @@ export const getAllEmployees = async (req, res) => {
 
 export const updateEmployee = async (req, res) => {
   try {
-    const userId = req.params.id; //get user to be updated using params
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      req.body.updatedUser,
-      { new: true }
-    ); // update the user
+    const userId = req.user._id; //get user to be updated using params
+    console.log(req.body.user);
+    const updatedUser = await User.findByIdAndUpdate(userId, req.body.user, {
+      new: true,
+    }); // update the user
     res
       .status(201)
       .json({ message: "updated user profile successfully", updatedUser }); // response to FE
@@ -112,6 +120,77 @@ export const deleteEmployee = async (req, res) => {
   }
 };
 
+export const uploadProfilePictureController = async (req, res) => {
+  try {
+    const employeeId = req.user.id; // Get employee ID from JWT token
+    const ext = path.extname(req.file.originalname);
+    const uploadDir = path.join(__dirname, "../uploads/profile_pictures");
+    console.log(uploadDir);
+    const newFilePath = path.join(uploadDir, `${employeeId}${ext}`);
+
+    // Check if an existing profile picture for this employee exists
+    const existingFilePath = findExistingProfilePicture(employeeId);
+
+    if (existingFilePath) {
+      // Delete the old profile picture if it exists
+      fs.unlinkSync(existingFilePath);
+    }
+
+    // Store the new profile picture path in the database (assuming the user model has a 'profilePicture' field)
+    await User.findByIdAndUpdate(employeeId, {
+      profilePicture: `/uploads/profile_pictures/${employeeId}${ext}`,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile picture uploaded successfully!",
+      profilePicture: `/uploads/profile_pictures/${employeeId}${ext}`,
+    });
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to upload profile picture" });
+  }
+};
+
+// Helper function to check if an employee already has a profile picture
+export const findExistingProfilePicture = (employeeId) => {
+  console.log(employeeId);
+  const directory = path.join(__dirname, "../uploads/profile_pictures");
+  console.log(directory);
+  const files = fs.readdirSync(directory);
+  console.log(files);
+
+  // Find the existing profile picture by matching the employee ID
+  const existingFile = files.find((file) => file.startsWith(employeeId));
+  console.log(existingFile);
+
+  if (existingFile) {
+    return path.join(directory, existingFile);
+  }
+  return null;
+};
+
+export const getProfilePicture = async (req, res) => {
+  try {
+    const employeeId = req.user._id; // Get employee ID from JWT token
+    const filePath = findExistingProfilePicture(employeeId);
+
+    if (!filePath || !fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "Profile picture not found" });
+    }
+
+    // Send the file as binary data, with the appropriate content type
+    const mimeType = 'image/jpg'; // Adjust based on your image format (jpg, png, etc.)
+    res.setHeader('Content-Type', mimeType);
+    res.sendFile(filePath); // This will send the image binary as a response
+  } catch (error) {
+    console.error("Error fetching profile picture:", error);
+    res.status(500).json({ message: "Failed to fetch profile picture" });
+  }
+};
+
 //dashboard stats
 
 export const getDashboardStats = async (req, res) => {
@@ -126,25 +205,59 @@ export const getDashboardStats = async (req, res) => {
 
     const employeePendingProjects = await Project.countDocuments({
       assignedEmployees: employeeId,
-      status: "Pending", // Count pending projects for the employee
+      status: "active", // Count pending projects for the employee
     });
     console.log(employeePendingProjects);
-    
-    const employeeDaysOffCount = await LeaveRecords.countDocuments({
-      employee: employeeId,
-      status: "approved", // Approved leaves specific to the employee
-    });
-    console.log(employeeDaysOffCount);
+
+    // Get the start and end of the month
+    const now = new Date();
+    now.setUTCHours(0, 0, 0, 0);
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-based, so January is 0
+
+    const startOfMonth = new Date(year, month, 1); // Start of the current month
+    const endOfMonth = new Date(year, month + 1, 0); // End of the current month
+    endOfMonth.setUTCHours(23, 59, 59, 999); // Set to the end of the day
+    console.log(startOfMonth, endOfMonth);
+
+    // Query attendance for the employee and the specified date range
+    const daysOffCount = await Attendance.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: startOfMonth,
+            $lt: endOfMonth, // Fetch records within the month
+          },
+          "attendance.employeeId": new mongoose.Types.ObjectId(employeeId),
+          "attendance.status": "Absent", // Only Absent days
+        },
+      },
+      {
+        $unwind: "$attendance", // Unwind the attendance array to access employee-specific data
+      },
+      {
+        $match: {
+          "attendance.employeeId": new mongoose.Types.ObjectId(employeeId),
+          "attendance.status": "Absent", // Filter absent status
+        },
+      },
+      {
+        $count: "daysOff", // Count the number of records
+      },
+    ]);
+    console.log(daysOffCount);
+
+    const employeeDaysOffCount =
+      daysOffCount.length > 0 ? daysOffCount[0].daysOff : 0;
 
     // Respond with data
     res.status(200).json({
-      "dashboardStats": {
-        projects: employeeProjectsCount,
-        pending: employeePendingProjects,
-        daysOff: employeeDaysOffCount,
-      },
+      projects: employeeProjectsCount,
+      pending: employeePendingProjects,
+      daysOff: employeeDaysOffCount,
     });
   } catch (error) {
+    console.log(error);
     res
       .status(500)
       .json({ message: "Error fetching employee dashboard stats", error });

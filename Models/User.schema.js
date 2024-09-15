@@ -23,12 +23,15 @@ const userSchema = new mongoose.Schema(
       type: {},
     },
     role: {
-        type: String,
-        default:'employee'
-    }
+      type: String,
+      default: "employee",
+    },
+    profilePicture: {
+      type: String,
+    },
   },
-  {strict : false}
+  { strict: false }
 );
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 export default User;

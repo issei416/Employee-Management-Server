@@ -23,7 +23,7 @@ const projectSchema = mongoose.Schema({
         required:true
     }, status: {
         type: "String",
-        enum: ["active", "inactive"],
+        enum: ["active", "delivered"],
         default: "active",
         required:true
     }, priority: {
