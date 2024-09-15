@@ -10,6 +10,7 @@ This is the backend for the Employee Management System project, built with Node.
 - **Leave Management**: Handle employee leave requests and records.
 - **Project Management**: Manage project assignments for employees.
 - **Profile Picture Upload**: Employees can upload and update their profile pictures.
+- **Middleware**: To ensure secure Authentication / role-base Authorization of the users
 
 ## 🧰 Tech Stack
 
@@ -33,8 +34,6 @@ TZ=<Your Time zone>
 
 ## 📦 Dependencies
 
-* **axios**:  
- For making HTTP requests to external services.
 * **bcryptj**:  
  For hashing passwords before storing them in the database.
 * **cors**:  
