@@ -177,7 +177,7 @@ export const getSwipeStatus = async (req, res) => {
   try {
     const userId = req.user._id;
     const today = new Date();
-    today.setUTCHours(0, 0, 0, 0); // Start of today in UTC
+    today.setHours(0, 0, 0, 0); // Start of today in 
     console.log(today.toISOString()); // Logging in ISO format for clarity
 
     let attendance = await Attendance.findOne({ date: today });
@@ -217,7 +217,7 @@ export const swipeToggle = async (req, res) => {
     let message = "";
     const userId = req.user._id;
     const today = new Date();
-    today.setUTCHours(0, 0, 0, 0); // Start of today in UTC
+    today.setHours(0, 0, 0, 0); // Start of today in 
     console.log(today.toISOString()); // Logging in ISO format for clarity
 
     let attendance = await Attendance.findOne({ date: today });
@@ -272,11 +272,11 @@ export const attendanceRecordLastNDays = async (req, res) => {
     const n = 7;
 
     const today = new Date();
-    today.setUTCHours(0, 0, 0, 0); // Start of today in UTC
+    today.setHours(0, 0, 0, 0); // Start of today in 
 
     const nDaysAgo = new Date();
-    nDaysAgo.setUTCDate(today.getUTCDate() - n);
-    nDaysAgo.setUTCHours(0, 0, 0, 0); // Start of n days ago in UTC
+    nDaysAgo.setDate(today.getDate() - n);
+    nDaysAgo.setHours(0, 0, 0, 0); // Start of n days ago in 
 
     const attendanceRecord = await Attendance.aggregate([
       {

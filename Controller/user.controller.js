@@ -211,13 +211,13 @@ export const getDashboardStats = async (req, res) => {
 
     // Get the start and end of the month
     const now = new Date();
-    now.setUTCHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
     const year = now.getFullYear();
     const month = now.getMonth(); // 0-based, so January is 0
 
     const startOfMonth = new Date(year, month, 1); // Start of the current month
     const endOfMonth = new Date(year, month + 1, 0); // End of the current month
-    endOfMonth.setUTCHours(23, 59, 59, 999); // Set to the end of the day
+    endOfMonth.setHours(23, 59, 59, 999); // Set to the end of the day
     console.log(startOfMonth, endOfMonth);
 
     // Query attendance for the employee and the specified date range

@@ -5,7 +5,7 @@ cron.schedule('0 0 * * *', async () => {
     try {
         // Get today's date and set it to midnight
         const today = new Date();
-        today.setUTCHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
     
         // Check if today's attendance record already exists
         const existingAttendance = await Attendance.findOne({ date: today });
@@ -45,7 +45,7 @@ cron.schedule('59 23 * * *', async () => {
     try {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      yesterday.seUTCHours(0, 0, 0, 0); // Sets to midnight of the previous day
+      yesterday.setHours(0, 0, 0, 0); // Sets to midnight of the previous day
   
       const attendance = await Attendance.findOne({ date: yesterday });
   
